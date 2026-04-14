@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Lista de Tarefas</title>
+    <style>
+        /* CSS - Deixando o visual bonito */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding: 50px;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 { text-align: center; color: #333; }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #5c67f2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover { background-color: #4a54e1; }
+
+        /* Cores das Prioridades */
+        .alta { border-left: 5px solid #ff4d4d; }
+        .media { border-left: 5px solid #ffcc00; }
+        .baixa { border-left: 5px solid #2ecc71; }
+
+        ul { list-style: none; padding: 0; }
+
+        li {
+            background: #fff;
+            margin-bottom: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            transition: 0.3s;
+        }
+
+        .concluida {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .btn-excluir {
+            background-color: #ff4d4d;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 Minha Lista</h2>
+
+    <div class="input-group">
+        <input type="text" id="tarefaInput" placeholder="O que precisa fazer?">
+        <select id="prioridadeSelect">
+            <option value="alta">Alta Prioridade</option>
+            <option value="media">Média Prioridade</option>
+            <option value="baixa">Baixa Prioridade</option>
+        </select>
+        <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
+    </div>
+
+    <ul id="listaTarefas"></ul>
+</div>
+
+<script>
+    // JAVASCRIPT - A lógica do sistema
+    function adicionarTarefa() {
+        // 1. Pegar os valores dos campos
+        const input = document.getElementById("tarefaInput");
+        const prioridade = document.getElementById("prioridadeSelect").value;
+        const textoTarefa = input.value;
+
+        // Validação básica: não deixa adicionar tarefa vazia
+        if (textoTarefa === "") {
+            alert("Digite uma tarefa primeiro!");
+            return;
+        }
+
+        // 2. Criar o elemento da lista (LI)
+        const li = document.createElement("li");
+        li.classList.add(prioridade); // Adiciona a classe de cor da prioridade
+
+        // 3. Montar o conteúdo interno do LI
+        li.innerHTML = `
+            <span onclick="marcarConcluida(this)">${textoTarefa}</span>
+            <button class="btn-excluir" onclick="removerTarefa(this)">X</button>
+        `;
+
+        // 4. Adicionar o LI na nossa UL (lista)
+        document.getElementById("listaTarefas").appendChild(li);
+
+        // 5. Limpar o campo de texto
+        input.value = "";
+    }
+
+    function marcarConcluida(elemento) {
+        // Toggle: se tiver a classe ele tira, se não tiver ele coloca
+        elemento.parentElement.classList.toggle("concluida");
+    }
+
+    function removerTarefa(botao) {
+        // Remove o elemento "pai" do botão, que é o LI
+        botao.parentElement.remove();
+    }
+</script>
+
+</body>
+</html>
