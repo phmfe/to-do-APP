@@ -3,39 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Lista de Tarefas</title>
+    <title>Minha Agenda de Tarefas</title>
     <style>
-        /* CSS - Deixando o visual bonito */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #eef2f7;
             display: flex;
             justify-content: center;
-            padding: 50px;
+            padding: 20px;
         }
 
         .container {
             background: white;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
         }
 
-        h2 { text-align: center; color: #333; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
 
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
             margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
         }
 
         input, select, button {
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
             border: 1px solid #ddd;
+            font-size: 14px;
         }
 
         button {
@@ -44,26 +47,37 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
         }
 
         button:hover { background-color: #4a54e1; }
 
-        /* Cores das Prioridades */
-        .alta { border-left: 5px solid #ff4d4d; }
-        .media { border-left: 5px solid #ffcc00; }
-        .baixa { border-left: 5px solid #2ecc71; }
-
+        /* Estilo da Lista */
         ul { list-style: none; padding: 0; }
 
-        li {
+        .item-tarefa {
             background: #fff;
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 12px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee;
-            transition: 0.3s;
+            border-radius: 8px;
+            border-left: 8px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Cores de Prioridade */
+        .alta { border-left-color: #ff4d4d; }
+        .media { border-left-color: #ffcc00; }
+        .baixa { border-left-color: #2ecc71; }
+
+        .info-tarefa { display: flex; flex-direction: column; gap: 4px; }
+        
+        .data-hora {
+            font-size: 12px;
+            color: #777;
+            font-weight: bold;
         }
 
         .concluida {
@@ -75,66 +89,119 @@
             background-color: #ff4d4d;
             padding: 5px 10px;
             font-size: 12px;
+            width: auto;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📝 Minha Lista</h2>
+    <h2>📅 Minha Agenda</h2>
 
     <div class="input-group">
-        <input type="text" id="tarefaInput" placeholder="O que precisa fazer?">
+        <input type="text" id="tarefaInput" placeholder="O que você precisa fazer?">
+        
+        <div style="display: flex; gap: 5px;">
+            <input type="date" id="dataInput" style="flex: 2;">
+            <input type="time" id="horaInput" style="flex: 1;">
+        </div>
+
         <select id="prioridadeSelect">
             <option value="alta">Alta Prioridade</option>
             <option value="media">Média Prioridade</option>
             <option value="baixa">Baixa Prioridade</option>
         </select>
-        <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
+        
+        <button onclick="adicionarTarefa()">Agendar Tarefa</button>
     </div>
 
+    <!-- Lista onde as tarefas aparecem -->
     <ul id="listaTarefas"></ul>
 </div>
 
 <script>
-    // JAVASCRIPT - A lógica do sistema
-    function adicionarTarefa() {
-        // 1. Pegar os valores dos campos
-        const input = document.getElementById("tarefaInput");
-        const prioridade = document.getElementById("prioridadeSelect").value;
-        const textoTarefa = input.value;
+    // Array para armazenar todas as tarefas (nosso "Banco de Dados" temporário)
+    let bancoDeTarefas = [];
 
-        // Validação básica: não deixa adicionar tarefa vazia
-        if (textoTarefa === "") {
-            alert("Digite uma tarefa primeiro!");
+    function adicionarTarefa() {
+        const inputTexto = document.getElementById("tarefaInput");
+        const inputData = document.getElementById("dataInput");
+        const inputHora = document.getElementById("horaInput");
+        const inputPrioridade = document.getElementById("prioridadeSelect");
+
+        // Validação: não aceita campos vazios
+        if (!inputTexto.value || !inputData.value || !inputHora.value) {
+            alert("Preencha todos os campos (Tarefa, Data e Hora)!");
             return;
         }
 
-        // 2. Criar o elemento da lista (LI)
-        const li = document.createElement("li");
-        li.classList.add(prioridade); // Adiciona a classe de cor da prioridade
+        // Criar um objeto da tarefa
+        const novaTarefa = {
+            id: Date.now(), // ID único baseado no tempo
+            texto: inputTexto.value,
+            data: inputData.value,
+            hora: inputHora.value,
+            prioridade: inputPrioridade.value,
+            concluida: false
+        };
 
-        // 3. Montar o conteúdo interno do LI
-        li.innerHTML = `
-            <span onclick="marcarConcluida(this)">${textoTarefa}</span>
-            <button class="btn-excluir" onclick="removerTarefa(this)">X</button>
-        `;
+        // Adicionar ao nosso array
+        bancoDeTarefas.push(novaTarefa);
 
-        // 4. Adicionar o LI na nossa UL (lista)
-        document.getElementById("listaTarefas").appendChild(li);
+        // Organizar as tarefas por data e hora (A lógica da agenda)
+        organizarAgenda();
 
-        // 5. Limpar o campo de texto
-        input.value = "";
+        // Atualizar a tela
+        renderizarTela();
+
+        // Limpar campos
+        inputTexto.value = "";
     }
 
-    function marcarConcluida(elemento) {
-        // Toggle: se tiver a classe ele tira, se não tiver ele coloca
-        elemento.parentElement.classList.toggle("concluida");
+    function organizarAgenda() {
+        // Ordena o array comparando a data + hora
+        bancoDeTarefas.sort((a, b) => {
+            const dataA = new Date(a.data + "T" + a.hora);
+            const dataB = new Date(b.data + "T" + b.hora);
+            return dataA - dataB;
+        });
     }
 
-    function removerTarefa(botao) {
-        // Remove o elemento "pai" do botão, que é o LI
-        botao.parentElement.remove();
+    function renderizarTela() {
+        const listaUl = document.getElementById("listaTarefas");
+        listaUl.innerHTML = ""; // Limpa a lista antes de desenhar
+
+        bancoDeTarefas.forEach(tarefa => {
+            // Formatar data para o padrão brasileiro (DD/MM/AAAA)
+            const dataFormatada = tarefa.data.split('-').reverse().join('/');
+
+            const li = document.createElement("li");
+            li.className = `item-tarefa ${tarefa.prioridade} ${tarefa.concluida ? 'concluida' : ''}`;
+
+            li.innerHTML = `
+                <div class="info-tarefa" onclick="alternarConcluida(${tarefa.id})">
+                    <strong>${tarefa.texto}</strong>
+                    <span class="data-hora">🗓️ ${dataFormatada} às ${tarefa.hora}</span>
+                </div>
+                <button class="btn-excluir" onclick="removerTarefa(${tarefa.id})">X</button>
+            `;
+
+            listaUl.appendChild(li);
+        });
+    }
+
+    function alternarConcluida(id) {
+        bancoDeTarefas = bancoDeTarefas.map(t => {
+            if (t.id === id) t.concluida = !t.concluida;
+            return t;
+        });
+        renderizarTela();
+    }
+
+    function removerTarefa(id) {
+        // Filtra o array, mantendo apenas as tarefas que NÃO têm o ID clicado
+        bancoDeTarefas = bancoDeTarefas.filter(t => t.id !== id);
+        renderizarTela();
     }
 </script>
 
