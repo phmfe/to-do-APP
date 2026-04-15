@@ -3,207 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Agenda de Tarefas</title>
+    <title>Agenda Master Pro</title>
     <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+        }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #eef2f7;
-            display: flex;
-            justify-content: center;
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
             padding: 20px;
-        }
-
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-
-        .input-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
+            align-items: center;
         }
+
+        .container { width: 100%; max-width: 800px; }
+
+        /* Formulário Elaborado */
+        .form-card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-card h2 { grid-column: 1 / -1; margin-top: 0; }
 
         input, select, button {
             padding: 12px;
-            border-radius: 8px;
             border: 1px solid #ddd;
-            font-size: 14px;
+            border-radius: 8px;
+            outline: none;
         }
 
+        .full-width { grid-column: 1 / -1; }
+
         button {
-            background-color: #5c67f2;
+            background: var(--primary);
             color: white;
             border: none;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
             transition: 0.3s;
         }
 
-        button:hover { background-color: #4a54e1; }
+        button:hover { background: #4f46e5; transform: translateY(-2px); }
 
-        /* Estilo da Lista */
-        ul { list-style: none; padding: 0; }
+        /* Organização por Dias (Quadrados) */
+        .agenda-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
 
-        .item-tarefa {
-            background: #fff;
-            margin-bottom: 12px;
+        .dia-section {
+            background: #e5e7eb;
             padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px;
-            border-left: 8px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            min-height: 200px;
         }
 
-        /* Cores de Prioridade */
-        .alta { border-left-color: #ff4d4d; }
-        .media { border-left-color: #ffcc00; }
-        .baixa { border-left-color: #2ecc71; }
-
-        .info-tarefa { display: flex; flex-direction: column; gap: 4px; }
-        
-        .data-hora {
-            font-size: 12px;
-            color: #777;
+        .dia-titulo {
             font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .concluida {
-            text-decoration: line-through;
-            opacity: 0.5;
+        /* Card de Tarefa Individual */
+        .tarefa-card {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 5px solid #ccc;
+            position: relative;
+        }
+
+        .prioridade-alta { border-left-color: #ef4444; }
+        .prioridade-media { border-left-color: #f59e0b; }
+        .prioridade-baixa { border-left-color: #10b981; }
+
+        .tarefa-header { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        
+        .tarefa-foto {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .hora-tag {
+            font-size: 0.75rem;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #666;
         }
 
         .btn-excluir {
-            background-color: #ff4d4d;
-            padding: 5px 10px;
-            font-size: 12px;
-            width: auto;
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            float: right;
+            cursor: pointer;
         }
+
+        .concluida { opacity: 0.5; text-decoration: line-through; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📅 Minha Agenda</h2>
-
-    <div class="input-group">
-        <input type="text" id="tarefaInput" placeholder="O que você precisa fazer?">
-        
-        <div style="display: flex; gap: 5px;">
-            <input type="date" id="dataInput" style="flex: 2;">
-            <input type="time" id="horaInput" style="flex: 1;">
-        </div>
-
-        <select id="prioridadeSelect">
-            <option value="alta">Alta Prioridade</option>
-            <option value="media">Média Prioridade</option>
-            <option value="baixa">Baixa Prioridade</option>
+    <div class="form-card">
+        <h2>🚀 Nova Atividade</h2>
+        <input type="text" id="nome" placeholder="O que fazer?" class="full-width">
+        <input type="text" id="emoji" placeholder="Emoji (ex: 💻, 🍎, 🏋️)">
+        <select id="prioridade">
+            <option value="alta">Prioridade Alta</option>
+            <option value="media">Prioridade Média</option>
+            <option value="baixa">Prioridade Baixa</option>
         </select>
-        
-        <button onclick="adicionarTarefa()">Agendar Tarefa</button>
+        <input type="date" id="data">
+        <input type="time" id="hora">
+        <input type="file" id="foto" accept="image/*" class="full-width">
+        <button onclick="adicionarTarefa()" class="full-width">Agendar na Minha Vida</button>
     </div>
 
-    <!-- Lista onde as tarefas aparecem -->
-    <ul id="listaTarefas"></ul>
+    <div id="agendaDisplay" class="agenda-grid">
+        <!-- Os dias e tarefas aparecerão aqui -->
+    </div>
 </div>
 
 <script>
-    // Array para armazenar todas as tarefas (nosso "Banco de Dados" temporário)
-    let bancoDeTarefas = [];
+    let tarefas = [];
+
+    // Pedir permissão para notificações ao carregar
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
 
     function adicionarTarefa() {
-        const inputTexto = document.getElementById("tarefaInput");
-        const inputData = document.getElementById("dataInput");
-        const inputHora = document.getElementById("horaInput");
-        const inputPrioridade = document.getElementById("prioridadeSelect");
+        const nome = document.getElementById('nome').value;
+        const emoji = document.getElementById('emoji').value || '📝';
+        const data = document.getElementById('data').value;
+        const hora = document.getElementById('hora').value;
+        const prioridade = document.getElementById('prioridade').value;
+        const fotoInput = document.getElementById('foto');
 
-        // Validação: não aceita campos vazios
-        if (!inputTexto.value || !inputData.value || !inputHora.value) {
-            alert("Preencha todos os campos (Tarefa, Data e Hora)!");
-            return;
+        if (!nome || !data || !hora) return alert("Preencha o básico!");
+
+        const leitor = new FileReader();
+        
+        // Se houver foto, lê a imagem antes de salvar
+        if (fotoInput.files[0]) {
+            leitor.readAsDataURL(fotoInput.files[0]);
+            leitor.onload = () => salvarTarefa(nome, emoji, data, hora, prioridade, leitor.result);
+        } else {
+            salvarTarefa(nome, emoji, data, hora, prioridade, null);
         }
+    }
 
-        // Criar um objeto da tarefa
-        const novaTarefa = {
-            id: Date.now(), // ID único baseado no tempo
-            texto: inputTexto.value,
-            data: inputData.value,
-            hora: inputHora.value,
-            prioridade: inputPrioridade.value,
-            concluida: false
+    function salvarTarefa(nome, emoji, data, hora, prioridade, fotoBase64) {
+        const nova = {
+            id: Date.now(),
+            nome, emoji, data, hora, prioridade, foto: fotoBase64, concluida: false
         };
 
-        // Adicionar ao nosso array
-        bancoDeTarefas.push(novaTarefa);
-
-        // Organizar as tarefas por data e hora (A lógica da agenda)
-        organizarAgenda();
-
-        // Atualizar a tela
-        renderizarTela();
-
-        // Limpar campos
-        inputTexto.value = "";
+        tarefas.push(nova);
+        enviarNotificacao(nome);
+        renderizar();
+        
+        // Limpa campos
+        document.getElementById('nome').value = "";
+        document.getElementById('foto').value = "";
     }
 
-    function organizarAgenda() {
-        // Ordena o array comparando a data + hora
-        bancoDeTarefas.sort((a, b) => {
-            const dataA = new Date(a.data + "T" + a.hora);
-            const dataB = new Date(b.data + "T" + b.hora);
-            return dataA - dataB;
+    function enviarNotificacao(titulo) {
+        if (Notification.permission === "granted") {
+            new Notification("Agenda Master", {
+                body: `Tarefa "${titulo}" adicionada com sucesso!`,
+                icon: "https://cdn-icons-png.flaticon.com/512/1069/1069159.png"
+            });
+        }
+    }
+
+    function renderizar() {
+        const display = document.getElementById('agendaDisplay');
+        display.innerHTML = "";
+
+        // 1. Agrupar tarefas por data
+        const grupos = {};
+        tarefas.sort((a,b) => (a.hora > b.hora ? 1 : -1)); // Ordena por hora interna
+
+        tarefas.forEach(t => {
+            if (!grupos[t.data]) grupos[t.data] = [];
+            grupos[t.data].push(t);
+        });
+
+        // 2. Ordenar as datas (dias)
+        const datasOrdenadas = Object.keys(grupos).sort();
+
+        datasOrdenadas.forEach(data => {
+            const secao = document.createElement('div');
+            secao.className = 'dia-section';
+            
+            const dataBr = data.split('-').reverse().join('/');
+            secao.innerHTML = `<div class="dia-titulo"><span>📅 ${dataBr}</span></div>`;
+
+            grupos[data].forEach(t => {
+                const card = document.createElement('div');
+                card.className = `tarefa-card prioridade-${t.prioridade} ${t.concluida ? 'concluida' : ''}`;
+                
+                card.innerHTML = `
+                    <button class="btn-excluir" onclick="excluir(${t.id})">🗑️</button>
+                    <div class="tarefa-header" onclick="alternar(${t.id})">
+                        <span>${t.emoji}</span>
+                        <span>${t.nome}</span>
+                    </div>
+                    <span class="hora-tag">⏰ ${t.hora}</span>
+                    ${t.foto ? `<img src="${t.foto}" class="tarefa-foto">` : ''}
+                `;
+                secao.appendChild(card);
+            });
+
+            display.appendChild(secao);
         });
     }
 
-    function renderizarTela() {
-        const listaUl = document.getElementById("listaTarefas");
-        listaUl.innerHTML = ""; // Limpa a lista antes de desenhar
-
-        bancoDeTarefas.forEach(tarefa => {
-            // Formatar data para o padrão brasileiro (DD/MM/AAAA)
-            const dataFormatada = tarefa.data.split('-').reverse().join('/');
-
-            const li = document.createElement("li");
-            li.className = `item-tarefa ${tarefa.prioridade} ${tarefa.concluida ? 'concluida' : ''}`;
-
-            li.innerHTML = `
-                <div class="info-tarefa" onclick="alternarConcluida(${tarefa.id})">
-                    <strong>${tarefa.texto}</strong>
-                    <span class="data-hora">🗓️ ${dataFormatada} às ${tarefa.hora}</span>
-                </div>
-                <button class="btn-excluir" onclick="removerTarefa(${tarefa.id})">X</button>
-            `;
-
-            listaUl.appendChild(li);
-        });
+    function excluir(id) {
+        tarefas = tarefas.filter(t => t.id !== id);
+        renderizar();
     }
 
-    function alternarConcluida(id) {
-        bancoDeTarefas = bancoDeTarefas.map(t => {
-            if (t.id === id) t.concluida = !t.concluida;
-            return t;
-        });
-        renderizarTela();
-    }
-
-    function removerTarefa(id) {
-        // Filtra o array, mantendo apenas as tarefas que NÃO têm o ID clicado
-        bancoDeTarefas = bancoDeTarefas.filter(t => t.id !== id);
-        renderizarTela();
+    function alternar(id) {
+        tarefas = tarefas.map(t => t.id === id ? {...t, concluida: !t.concluida} : t);
+        renderizar();
     }
 </script>
 
 </body>
 </html>
+
+     
+
+        
+      
